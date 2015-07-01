@@ -6,7 +6,7 @@ from configparser import ConfigParser
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
-from thermostat import Sensor,SensorGroup,Accuweather,W1Therm
+from thermostat.sensor import Sensor,SensorGroup,Accuweather,W1Therm
 
 Session = sessionmaker()
 
@@ -40,15 +40,17 @@ def listall():
     groupless = session.query(Sensor).filter(Sensor.group_id == None).all()
     # Print list of all sensors by group
     for g in groups:
-        print("{0} - {1}:".format(g.id,g))
+        print("{0}:".format(g.name))
         if len(g.sensors)>0:
             for s in g.sensors:
-                print("    {0} - {1}".format(s.id,s))
+                available = 'Available ' if s.available() else ''
+                print("    id={0} '{1}' {2}".format(s.id,s.name,available))
         else:
             print("    None")
     print("No Group:")
     if len(groupless)>0:
         for s in groupless:
-            print("    {0} - {1}".format(s.id,s))
+            available = 'Available ' if s.available() else ''
+            print("    id={0} '{1}' {2}".format(s.id,s.name,available))
     else:
         print("    None")
