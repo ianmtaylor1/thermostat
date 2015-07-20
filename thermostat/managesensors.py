@@ -2,11 +2,11 @@
     manage-sensors utility."""
 
 import sys
-from configparser import ConfigParser
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
 from thermostat.sensor import Sensor,SensorGroup,Accuweather,W1Therm
+from thermostat.config import Config
 
 Session = sessionmaker()
 
@@ -16,20 +16,24 @@ def main(argv):
     # Check that a command was passed
     if len(argv) == 1:
         print("Must pass a command.",file=sys.stderr)
+        usage(argv)
         return 1
     # Get the config file name from command line
-    conffile = 'thermostat.ini'
-    config = ConfigParser()
-    config.read(conffile)
+    conffile = 'thermostat.conf'
+    defaultfile = 'thermostat.conf.defaults'
+    config = Config(conffile,defaultfile)
     # Create engine and bind session
-    cxn = config['connection']
-    engine = create_engine(cxn['connect string'],echo=cxn.getboolean('debug sql'))
+    cxn = config.option('connection')
+    echo = config.option('debug/echosql',Config.BOOL)
+    engine = create_engine(cxn,echo=echo)
     Session.configure(bind=engine)
     # Check what the command is and call appropriate function
     if argv[1] == 'list':
         listall()
     else:
         print("Unknown command: {0}".format(argv[1]),file=sys.stderr)
+        print()
+        usage(argv)
         return 1
     return 0
 
@@ -54,3 +58,7 @@ def listall():
             print("    id={0} '{1}' {2}".format(s.id,s.name,available))
     else:
         print("    None")
+
+def usage(argv):
+    print("Usage:")
+    print("{0} (list|add)".format(argv[0]))

@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='us-ascii'?>
+<!-- Configuration file containing the defaults for all options.
+Not the same thing as a default configuration file and will not work
+on its own.-->
+<thermostat>
+    <debug>
+        <echosql>False</echosql>
+    </debug>
+</thermostat>
