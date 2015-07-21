@@ -10,34 +10,7 @@ from thermostat.config import Config
 
 Session = sessionmaker()
 
-def main(argv): 
-    """Main entry point.
-    argv = command-line arguments passed to utility"""
-    # Check that a command was passed
-    if len(argv) == 1:
-        print("Must pass a command.",file=sys.stderr)
-        usage(argv)
-        return 1
-    # Get the config file name from command line
-    conffile = 'thermostat.conf'
-    defaultfile = 'thermostat.conf.defaults'
-    config = Config(conffile,defaultfile)
-    # Create engine and bind session
-    cxn = config.option('connection')
-    echo = config.option('debug/echosql',Config.BOOL)
-    engine = create_engine(cxn,echo=echo)
-    Session.configure(bind=engine)
-    # Check what the command is and call appropriate function
-    if argv[1] == 'list':
-        listall()
-    else:
-        print("Unknown command: {0}".format(argv[1]),file=sys.stderr)
-        print()
-        usage(argv)
-        return 1
-    return 0
-
-def listall():
+def listsensors():
     # Get list of all sensors
     session = Session()
     groups = session.query(SensorGroup).all()
@@ -61,7 +34,33 @@ def listall():
             print("    id={0} '{1}' {2}".format(s.id,s.name,available))
     if foundsensors==False:
         print("No sensors or groups.")
+    return 0
 
-def usage(argv):
+def usage():
     print("Usage:")
-    print("{0} (list|add)".format(argv[0]))
+    print("manage-sensors list")
+
+def main(argv): 
+    """Main entry point.
+    argv = command-line arguments passed to utility"""
+    # Get the config file name from command line
+    conffile = 'thermostat.conf'
+    defaultfile = 'thermostat.conf.defaults'
+    config = Config(conffile,defaultfile)
+    # Create engine and bind session
+    cxn = config.option('connection')
+    echo = config.option('debug/echosql',Config.BOOL)
+    engine = create_engine(cxn,echo=echo)
+    Session.configure(bind=engine)
+    # Check what the command is and call appropriate function
+    commands = {'list':listsensors}
+    try:
+        if len(argv) > 2:
+            opts = argv[2:]
+        else:
+            opts = []
+        return commands[argv[1]](*opts)
+    except Exception as e:
+        print(e.__class__.__name__,':',e,end='\n\n')
+        usage()
+        return 1
