@@ -11,7 +11,7 @@ from thermostat.config import Config
 Session = sessionmaker()
 
 def listsensors():
-    # Get list of all sensors
+    """Get list of all sensors"""
     session = Session()
     groups = session.query(SensorGroup).all()
     groupless = session.query(Sensor).filter(Sensor.group_id == None).all()
@@ -36,9 +36,15 @@ def listsensors():
         print("No sensors or groups.")
     return 0
 
+def addsensor(sensorname, sensortype, *typeargs):
+    """Add a sensor to the database."""
+    raise NotImplementedError('Adding sensor not implemented')
+
 def usage():
-    print("Usage:")
-    print("manage-sensors list")
+    """Display the usage for this program."""
+    print("Usage:",file=sys.stderr)
+    print("manage-sensors list",file=sys.stderr)
+    print("manage-sensors addsensor <sensorname> <sensortype> ...",file=sys.stderr)
 
 def main(argv): 
     """Main entry point.
@@ -53,7 +59,7 @@ def main(argv):
     engine = create_engine(cxn,echo=echo)
     Session.configure(bind=engine)
     # Check what the command is and call appropriate function
-    commands = {'list':listsensors}
+    commands = {'list':listsensors,'addsensor':addsensor}
     try:
         if len(argv) > 2:
             opts = argv[2:]
@@ -61,6 +67,6 @@ def main(argv):
             opts = []
         return commands[argv[1]](*opts)
     except Exception as e:
-        print(e.__class__.__name__,':',e,end='\n\n')
+        print(e.__class__.__name__,':',e,end='\n\n',file=sys.stderr)
         usage()
         return 1
