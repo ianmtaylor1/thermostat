@@ -42,22 +42,25 @@ def listall():
     session = Session()
     groups = session.query(SensorGroup).all()
     groupless = session.query(Sensor).filter(Sensor.group_id == None).all()
+    foundsensors = False
     # Print list of all sensors by group
     for g in groups:
         print("{0}:".format(g.name))
         if len(g.sensors)>0:
+            foundsensors = True
             for s in g.sensors:
                 available = 'Available ' if s.available() else ''
                 print("    id={0} '{1}' {2}".format(s.id,s.name,available))
         else:
             print("    None")
-    print("No Group:")
     if len(groupless)>0:
+        foundsensors = True
+        print("No Group:")
         for s in groupless:
             available = 'Available ' if s.available() else ''
             print("    id={0} '{1}' {2}".format(s.id,s.name,available))
-    else:
-        print("    None")
+    if foundsensors==False:
+        print("No sensors or groups.")
 
 def usage(argv):
     print("Usage:")
