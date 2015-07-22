@@ -1,0 +1,4 @@
+Introduce argparse to parse command line options.
+Add ability to pass configuration file.
+Change config class to expose more direct xml.
+Add ability to add sensors and groups.
