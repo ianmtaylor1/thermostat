@@ -5,4 +5,4 @@
 from thermostat.managesensors import main
 import sys
 
-sys.exit(main(sys.argv))
+sys.exit(main())

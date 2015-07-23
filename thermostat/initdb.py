@@ -2,12 +2,18 @@ from thermostat.sensor import Base
 from thermostat.config import Config
 
 from sqlalchemy import create_engine
+import argparse
 
-def main(argv):
+def main():
+    # Parse the command line arguments
+    parser = argparse.ArgumentParser(description="Initialize the database for the thermostat backend.")
+    parser.add_argument('-c','--config',help='Configuration file path',
+                        default='thermostat.conf',dest='configfile',
+                        metavar='filename')
+    args = parser.parse_args()
     # Get the config file name from command line
-    conffile = 'thermostat.conf'
     defaultfile = 'thermostat.conf.defaults'
-    config = Config(conffile,defaultfile)
+    config = Config(args.configfile,defaultfile)
     # Create engine and bind session
     cxn = config.option('connection')
     echo = config.option('debug/echosql',Config.BOOL)

@@ -4,6 +4,7 @@
 import sys
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
+import argparse
 
 from thermostat.sensor import Sensor,SensorGroup,Accuweather,W1Therm
 from thermostat.config import Config
@@ -36,37 +37,34 @@ def listsensors():
         print("No sensors or groups.")
     return 0
 
-def addsensor(sensorname, sensortype, *typeargs):
+def addsensor():
     """Add a sensor to the database."""
     raise NotImplementedError('Adding sensor not implemented')
 
-def usage():
-    """Display the usage for this program."""
-    print("Usage:",file=sys.stderr)
-    print("manage-sensors list",file=sys.stderr)
-    print("manage-sensors addsensor <sensorname> <sensortype> ...",file=sys.stderr)
 
-def main(argv): 
-    """Main entry point.
-    argv = command-line arguments passed to utility"""
+def main(): 
+    """Main entry point."""
+    # Set up command line parser
+    parser = argparse.ArgumentParser()
+    parser.add_argument('command',choices=['list','addsensor'],
+                        help='Command to run')
+    parser.add_argument('-c','--config',help='Configuration file path',
+                        default='thermostat.conf',dest='configfile',
+                        metavar='filename')
+    args = parser.parse_args()
     # Get the config file name from command line
-    conffile = 'thermostat.conf'
     defaultfile = 'thermostat.conf.defaults'
-    config = Config(conffile,defaultfile)
+    config = Config(args.configfile,defaultfile)
     # Create engine and bind session
     cxn = config.option('connection')
     echo = config.option('debug/echosql',Config.BOOL)
     engine = create_engine(cxn,echo=echo)
     Session.configure(bind=engine)
     # Check what the command is and call appropriate function
-    commands = {'list':listsensors,'addsensor':addsensor}
-    try:
-        if len(argv) > 2:
-            opts = argv[2:]
-        else:
-            opts = []
-        return commands[argv[1]](*opts)
-    except Exception as e:
-        print(e.__class__.__name__,':',e,end='\n\n',file=sys.stderr)
-        usage()
-        return 1
+    if args.command == 'list':
+        return listsensors()
+    elif args.command == 'addsensors':
+        return addsensor()
+    else:
+        return 255
+
