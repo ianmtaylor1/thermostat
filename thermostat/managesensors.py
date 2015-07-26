@@ -19,7 +19,7 @@ def listsensors(args):
     foundsensors = False
     # Print list of all sensors by group
     for g in groups:
-        print("{0}:".format(g.name))
+        print("id={0} {1}:".format(g.id,g.name))
         if len(g.sensors)>0:
             foundsensors = True
             for s in g.sensors:
@@ -50,7 +50,28 @@ def add_accuweather(args):
     
 def add_w1therm(args):
     """Add a W1Therm sensor to the database."""
-    raise NotImplementedError('Adding W1Therm sensor not implemented.')
+    sensor = W1Therm(args.type,args.id,name=args.name,description=args.description)
+    session = Session()
+    confirmformat = "Name: {0}\nDescription: {1}\nW1 Type: {2}\nW1 ID: {3}\n"
+    print(confirmformat.format(sensor.name,sensor.description,sensor.w1_type,sensor.w1_id))
+    if input("Add this sensor? [y/n] ").lower() == 'y':
+        session.add(sensor)
+        session.commit()
+    else:
+        print("Abort.")
+
+def add_group(args):
+    """Add a Sensor Group to the database."""
+    group = SensorGroup(args.name, description=args.description)
+    session = Session()
+    confirmformat = "Name: {0}\nDescription: {1}\n"
+    print(confirmformat.format(group.name,group.description))
+    if input("Add this sensor? [y/n] ").lower() == 'y':
+        session.add(group)
+        session.commit()
+    else:
+        print("Abort.")
+
 
 def main(): 
     """Main entry point."""
@@ -71,6 +92,10 @@ def main():
     parser_w1.add_argument('type',type=int)
     parser_w1.add_argument('id')
     parser_w1.set_defaults(func=add_w1therm)
+    parser_addgroup = main_subparsers.add_parser('addgroup',description='Add a sensor group to the database',help='Add a sensor group')
+    parser_addgroup.add_argument('name')
+    parser_addgroup.add_argument('-d','--description')
+    parser_addgroup.set_defaults(func=add_group)
     args = parser.parse_args()
 
     # Get the config file name from command line
