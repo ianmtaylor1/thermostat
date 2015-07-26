@@ -3,4 +3,4 @@ Raspberry Pi Thermostat code
 
 Dependencies:
 * sqlalchemy
-* w1thhermsensor: https://github.com/timofurrer/w1thermsensor
+* w1thermsensor: https://github.com/timofurrer/w1thermsensor
