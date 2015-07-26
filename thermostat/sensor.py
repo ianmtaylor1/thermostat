@@ -11,7 +11,7 @@ from urllib.request import urlopen
 import xml.etree.ElementTree as ET
 import re
 
-from w1thermsensor.core import W1ThermSensor,NoSensorFoundError
+from w1thermsensor.core import W1ThermSensor,NoSensorFoundError,KernelModuleLoadError
 
 """Base class for use in this module."""
 Base = declarative_base()
@@ -160,6 +160,8 @@ class W1Therm(Sensor):
         try:
             wts = W1ThermSensor(sensor_type=self.w1_type,sensor_id=self.w1_id)
         except NoSensorFoundError:
+            return False
+        except KernelModuleLoadError:
             return False
         else:
             return True
