@@ -72,6 +72,36 @@ def add_group(args):
     else:
         print("Abort.")
 
+def change_group(args):
+    """Change the group to which a sensor belongs."""
+    session = Session()
+    # Get the sensor and group specified
+    sensorquery = session.query(Sensor).filter_by(id=args.sensorid)
+    if sensorquery.count()==0:
+        raise Exception('No sensors found with id={0}'.format(args.sensorid))
+    elif sensorquery.count()>1:
+        raise Exception('Multiple sensors found with id={0}'.format(args.sensorid))
+    sensor = sensorquery.all()[0]
+    if args.groupid is None:
+        newgroup = None
+    else:
+        groupquery = session.query(SensorGroup).filter_by(id=args.groupid)
+        if groupquery.count()==0:
+            raise Exception('No groups found with id={0}'.format(args.sensorid))
+        elif groupquery.count()>1:
+            raise Exception('Multiple groups found with id={0}'.format(args.sensorid))
+        newgroup = groupquery.all()[0]
+    # Get confirmation and make change
+    oldgroupname = None if sensor.group is None else sensor.group.name
+    newgroupname = None if newgroup is None else newgroup.name
+    confirmformat = "Sensor: {0}\nOld Group: {1}\nNew Group: {2}\n"
+    print(confirmformat.format(sensor.name,oldgroupname,newgroupname))
+    if input("Change this sensor's group? [y/n] ").lower() == 'y':
+        sensor.group = newgroup
+        session.commit()
+    else:
+        print("Abort.")
+
 
 def main(): 
     """Main entry point."""
@@ -96,6 +126,10 @@ def main():
     parser_addgroup.add_argument('name')
     parser_addgroup.add_argument('-d','--description')
     parser_addgroup.set_defaults(func=add_group)
+    parser_changegroup = main_subparsers.add_parser('changegroup',description="Change a sensor's assigned group. Leave groupid blank to remove its group.",help="Change a sensor's group")
+    parser_changegroup.add_argument('sensorid',type=int,help='ID of the sensor to modify')
+    parser_changegroup.add_argument('groupid',nargs='?',default=None,type=int,help="ID of the sensor's new group (blank for none)")
+    parser_changegroup.set_defaults(func=change_group)
     args = parser.parse_args()
 
     # Get the config file name from command line
