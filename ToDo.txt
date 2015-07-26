@@ -1,3 +1,1 @@
-Use subcommand feature of argparse in managesensors.py.
 Change config class to expose more direct xml.
-Add ability to add sensors and groups.
