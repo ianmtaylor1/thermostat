@@ -18,13 +18,14 @@ def listsensors(args):
     groupless = session.query(Sensor).filter(Sensor.group_id == None).all()
     foundsensors = False
     # Print list of all sensors by group
+    sensorstring="    id={id}, '{name}' {avail}"
     for g in groups:
         print("id={0} {1}:".format(g.id,g.name))
         if len(g.sensors)>0:
             foundsensors = True
             for s in g.sensors:
                 available = 'Available ' if s.available() else ''
-                print("    id={0} '{1}' {2}".format(s.id,s.name,available))
+                print(sensorstring.format(id=s.id,name=s.name,avail=available))
         else:
             print("    None")
     if len(groupless)>0:
@@ -32,7 +33,7 @@ def listsensors(args):
         print("No Group:")
         for s in groupless:
             available = 'Available ' if s.available() else ''
-            print("    id={0} '{1}' {2}".format(s.id,s.name,available))
+            print(sensorstring.format(id=s.id,name=s.name,avail=available))
     if foundsensors==False:
         print("No sensors or groups.")
 
@@ -42,7 +43,7 @@ def add_accuweather(args):
     session = Session()
     confirmformat = "Name: {0}\nDescription: {1}\nLocation Code: {2}\n"
     print(confirmformat.format(sensor.name,sensor.description,sensor.loccode))
-    if input("Add this sensor? [Y/N] ").lower() == 'y':
+    if args.yes==True or input("Add this sensor? [Y/N] ").lower() == 'y':
         session.add(sensor)
         session.commit()
     else:
@@ -54,7 +55,7 @@ def add_w1therm(args):
     session = Session()
     confirmformat = "Name: {0}\nDescription: {1}\nW1 Type: {2}\nW1 ID: {3}\n"
     print(confirmformat.format(sensor.name,sensor.description,sensor.w1_type,sensor.w1_id))
-    if input("Add this sensor? [y/n] ").lower() == 'y':
+    if args.yes==True or input("Add this sensor? [y/n] ").lower()=='y':
         session.add(sensor)
         session.commit()
     else:
@@ -66,7 +67,7 @@ def add_group(args):
     session = Session()
     confirmformat = "Name: {0}\nDescription: {1}\n"
     print(confirmformat.format(group.name,group.description))
-    if input("Add this sensor? [y/n] ").lower() == 'y':
+    if args.yes==True or input("Add this sensor? [y/n] ").lower()=='y':
         session.add(group)
         session.commit()
     else:
@@ -96,18 +97,19 @@ def change_group(args):
     newgroupname = None if newgroup is None else newgroup.name
     confirmformat = "Sensor: {0}\nOld Group: {1}\nNew Group: {2}\n"
     print(confirmformat.format(sensor.name,oldgroupname,newgroupname))
-    if input("Change this sensor's group? [y/n] ").lower() == 'y':
+    if args.yes==True or input("Change this sensor's group? [y/n] ").lower() == 'y':
         sensor.group = newgroup
         session.commit()
     else:
         print("Abort.")
 
 
-def main(): 
+def main(cmdline=None):
     """Main entry point."""
     # Set up command line parser
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog='manage-sensors',description='Manage the sensors in the database')
     parser.add_argument('-c','--config',help='Configuration file path',default='thermostat.conf',dest='configfile',metavar='filename')
+    parser.add_argument('-y','--yes',action='store_true',help='Answer "yes" to all prompts')
     main_subparsers = parser.add_subparsers()
     parser_list = main_subparsers.add_parser('list',description='List all sensors organized by group',help='List all sensors organized by group')
     parser_list.set_defaults(func=listsensors)
@@ -130,7 +132,10 @@ def main():
     parser_changegroup.add_argument('sensorid',type=int,help='ID of the sensor to modify')
     parser_changegroup.add_argument('groupid',nargs='?',default=None,type=int,help="ID of the sensor's new group (blank for none)")
     parser_changegroup.set_defaults(func=change_group)
-    args = parser.parse_args()
+    if cmdline is None:
+        args = parser.parse_args()
+    else:
+        args = parser.parse_args(cmdline)
 
     # Get the config file name from command line
     defaultfile = 'thermostat.conf.defaults'

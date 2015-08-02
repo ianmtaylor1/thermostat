@@ -1,1 +1,2 @@
+Create test suite with nose.
 Change config class to expose more direct xml.
