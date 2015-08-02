@@ -103,11 +103,9 @@ class Accuweather(Sensor):
     id = Column(Integer, ForeignKey('sensor.id'), primary_key=True)
     loccode = Column(String(10), nullable=False)
     
-    def __init__(self,loccode,name=None,description=None):
+    def __init__(self,loccode,**kwargs):
         self.loccode = loccode
-        if name is None:
-            name = 'Accuweather {}'.format(loccode)
-        super().__init__(name,description)
+        super().__init__(**kwargs)
     
     def __repr__(self):
         return "<Accuweather({0})>".format(self.loccode)
@@ -144,12 +142,10 @@ class W1Therm(Sensor):
     w1_type = Column(Integer, nullable=False)
     w1_id = Column(String(16), nullable=False)
     
-    def __init__(self,w1_type,w1_id,name=None,description=None):
+    def __init__(self,w1_type,w1_id,**kwargs):
         self.w1_type = w1_type
         self.w1_id = w1_id
-        if name is None:
-            name = 'W1Therm {0}'.format(w1_id)
-        super().__init__(name, description)
+        super().__init__(**kwargs)
     
     def __repr__(self):
         return "<W1Therm('{0}','{1}')>".format(
